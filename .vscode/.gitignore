@@ -1,0 +1,23 @@
+# 编译产物
+*.o
+*.obj
+*.elf
+*.hex
+*.bin
+*.map
+*.lst
+# Keil 工程临时文件
+*.uvopt
+*.uvgui.*
+*.bak
+*.tmp
+# VS Code 配置（可选，不想传就保留）
+.vscode/
+# 编译器/调试器日志
+*.log
+# 中间编译目录
+build/
+output/
+# FreeRTOS 无关临时文件
+*.swp
+*.swo
