@@ -39,6 +39,7 @@ static void OLED_I2C_SendByte(uint8_t Byte)
     OLED_W_SCL(1); // 接收应答的时钟脉冲（模拟，不读取实际应答）
     OLED_W_SCL(0);
 }
+
 //OLED写命令, Command 是要写入的命令
 void OLED_WriteCommand(uint8_t Command) 
 {

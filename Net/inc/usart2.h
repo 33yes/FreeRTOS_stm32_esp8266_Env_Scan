@@ -23,6 +23,15 @@
 #define USART2_RX_TIMEOUT_ARR        500
 #define USART2_RX_TIMEOUT_PSC        7200
 
+/* 兼容部分编辑器/索引器未注入芯片型号宏时 IRQn 未定义的问题 */
+#ifndef USART2_IRQn
+#define USART2_IRQn                  ((IRQn_Type)38)
+#endif
+
+#ifndef TIM4_IRQn
+#define TIM4_IRQn                    ((IRQn_Type)30)
+#endif
+
 extern unsigned int Usart2_RxCounter;          //外部声明，其他文件可以调用该变量
 extern char Usart2_RxBuff[USART2_RXBUFF_SIZE]; //外部声明，其他文件可以调用该变量
 

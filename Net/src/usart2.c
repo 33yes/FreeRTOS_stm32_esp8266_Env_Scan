@@ -1,5 +1,5 @@
-#include "stm32f10x.h" 
-#include "usart2.h"     
+#include "stm32f10x.h"
+#include "usart2.h"
 
 unsigned int Usart2_RxCounter = 0;      //定义一个变量，记录串口2总共接收了多少字节的数据
 char Usart2_RxBuff[USART2_RXBUFF_SIZE]; //定义一个数组，用于保存串口2接收到的数据
@@ -49,6 +49,7 @@ void usart2_init(unsigned int bound)
 	GPIO_InitStructure.GPIO_Pin = WIFI_TX_PIN;              //准备设置PA2
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;      //IO速率50M
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;         //复用推挽输出，用于串口2的发送
+	GPIO_Init(WIFI_GPIO, &GPIO_InitStructure);
 	// PA3
 	GPIO_InitStructure.GPIO_Pin = WIFI_RX_PIN;              //准备设置PA3
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;   //浮空输入，用于串口2的接收
@@ -93,7 +94,7 @@ void u2_printf(char* fmt, ...)
 
 	va_list ap;
 	va_start(ap, fmt);
-	vsprintf(USART2_TxBuff, fmt, ap);
+	vsnprintf(USART2_TxBuff, sizeof(USART2_TxBuff), fmt, ap);
 	va_end(ap);
 
 	length = strlen((const char*)USART2_TxBuff);
