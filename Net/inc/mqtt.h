@@ -18,7 +18,7 @@
 extern const char PRODUCTID[];      //产品ID，在main.c中定义
 extern const char DEVICEID [];      //设备ID，在main.c中定义 
 extern const char AUTHENTICATION[]; //鉴权信息，在main.c中定义 
-extern const char DATA_TOPIC_NAME[];//topic，Onenet数据点上传topic，在main.c中定义
+extern const char DATA_TOPIC_NAME[];//topic，OneNet数据上报topic，在main.c中定义
 extern const char SERVER_IP[];		//存放服务器IP或域名，在main.c中定义
 extern const int  SERVER_PORT;		//存放服务器的端口号，在main.c中定义
 
@@ -79,9 +79,11 @@ void MQTT_ThresholdInit(void);
 uint8_t MQTT_LoadThresholdFromAT24C02(void);
 /* 保存阈值配置到AT24C02 */
 uint8_t MQTT_SaveThresholdToAT24C02(void);
-/* 解析云端阈值JSON并更新本地阈值 */
-uint8_t MQTT_ParseAliyunThresholdJson(const char *json_payload);
-/* 处理一条云端阈值命令 */
-uint8_t MQTT_ProcessAliyunThresholdCommand(void);
+/* OneNet：将JSON封装为$dp数据格式后发布（0成功，非0失败） */
+uint8_t MQTT_PublishOneNetDpJson(const char *json_payload, int json_len);
+/* 解析OneNet下发JSON并更新本地阈值 */
+uint8_t MQTT_ParseOneNetThresholdJson(const char *json_payload);
+/* 处理一条OneNet阈值命令 */
+uint8_t MQTT_ProcessOneNetThresholdCommand(void);
 
 #endif

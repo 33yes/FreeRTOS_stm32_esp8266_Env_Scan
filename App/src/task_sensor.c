@@ -53,7 +53,12 @@ static void TaskSensor_Publish(const SensorData_t *data)
 	}
 
 	taskENTER_CRITICAL();
-	MQTT_PublishQs0(DATA_TOPIC_NAME, payload, payload_len);
+	/* OneNet上报：发送到$dp时需携带0x03+长度头，这里统一走封装接口 */
+	if (MQTT_PublishOneNetDpJson(payload, payload_len) != 0)
+	{
+		taskEXIT_CRITICAL();
+		return;
+	}
 	taskEXIT_CRITICAL();
 }
 

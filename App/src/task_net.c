@@ -11,11 +11,11 @@
 
 /*---------------------------------------------------------------*/
 /* 文件说明：task_net.c                                          */
-/* 功  能：网络任务（ESP8266 + MQTT）                            */
+/* 功  能：网络任务（ESP8266 + MQTT，当前对接OneNet）            */
 /* 内  容：                                                       */
 /*  1. WiFi连接与重连                                             */
 /*  2. MQTT报文收发泵处理                                         */
-/*  3. 阿里云阈值下发解析与持久化（通过mqtt.c接口）               */
+/*  3. OneNet阈值下发解析与持久化（通过mqtt.c接口）               */
 /*  4. 周期性上报网络状态和阈值                                   */
 /*---------------------------------------------------------------*/
 
@@ -38,19 +38,17 @@
 #define NET_MQTT_MAX_TX_PUMP_PER_ROUND  4
 #define NET_MQTT_MAX_RX_PUMP_PER_ROUND  4
 
-/*---------------------------------------------------------------*/
-/* 默认弱定义配置：                                               */
-/* 说明：如果工程其他文件定义了同名全局变量，会自动覆盖这里的默认值 */
-/*---------------------------------------------------------------*/
-TASK_NET_WEAK const char SSID[] = "YOUR_WIFI_SSID";
-TASK_NET_WEAK const char PASS[] = "YOUR_WIFI_PASS";
-TASK_NET_WEAK const char PRODUCTID[] = "YOUR_PRODUCT_KEY";
-TASK_NET_WEAK const char DEVICEID[] = "YOUR_DEVICE_NAME";
-TASK_NET_WEAK const char AUTHENTICATION[] = "YOUR_MQTT_PASSWORD";
-TASK_NET_WEAK const char DATA_TOPIC_NAME[] = "/sys/YOUR_PRODUCT_KEY/YOUR_DEVICE_NAME/thing/event/property/post";
-TASK_NET_WEAK const char SERVER_IP[] = "YOUR_PRODUCT_KEY.iot-as-mqtt.cn-shanghai.aliyuncs.com";
-TASK_NET_WEAK const int SERVER_PORT = 1883;
-TASK_NET_WEAK const char CMD_TOPIC_NAME[] = "/sys/YOUR_PRODUCT_KEY/YOUR_DEVICE_NAME/thing/service/property/set";
+TASK_NET_WEAK const char SSID[] = "YOUR_WIFI_SSID";  //热点名称
+TASK_NET_WEAK const char PASS[] = "YOUR_WIFI_PASS";  //热点密码
+TASK_NET_WEAK const char PRODUCTID[] = "80id181j0o";  //OneNet产品ID
+TASK_NET_WEAK const char DEVICEID[] = "Env_001";  //OneNet设备ID
+TASK_NET_WEAK const char AUTHENTICATION[] = "RjVDMzJSZVZ1emZZeWVLbEh5U3JlUHI2V1hFUEt5anU=";  //API key
+TASK_NET_WEAK const char DATA_TOPIC_NAME[] = "$dp";
+// MQTT 固定地址
+TASK_NET_WEAK const char SERVER_IP[] = "183.230.40.39";
+TASK_NET_WEAK const int SERVER_PORT = 6002;
+
+TASK_NET_WEAK const char CMD_TOPIC_NAME[] = "$creq/#"; //OneNet下行命令Topic
 
 /* 网络运行时状态 */
 NetMqttRuntime_t g_net_mqtt_runtime = {
@@ -177,7 +175,7 @@ static void NetMqtt_ProcessCmdQueue(void)
 {
 	while (MQTT_CMDOutPtr != MQTT_CMDInPtr)
 	{
-		if (MQTT_ProcessAliyunThresholdCommand())
+		if (MQTT_ProcessOneNetThresholdCommand())
 		{
 			TaskNetMqtt_PublishStatusAndThreshold();
 		}
@@ -328,7 +326,12 @@ BaseType_t TaskNetMqtt_PublishStatusAndThreshold(void)
 	}
 
 	taskENTER_CRITICAL();
-	MQTT_PublishQs0(DATA_TOPIC_NAME, payload, payload_len);
+	/* OneNet上报：将JSON封装为$dp格式后入MQTT发送缓冲区 */
+	if (MQTT_PublishOneNetDpJson(payload, payload_len) != 0)
+	{
+		taskEXIT_CRITICAL();
+		return pdFAIL;
+	}
 	taskEXIT_CRITICAL();
 
 	g_net_mqtt_runtime.last_report_tick = xTaskGetTickCount();

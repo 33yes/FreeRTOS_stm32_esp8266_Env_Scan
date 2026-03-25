@@ -222,11 +222,11 @@ void MQTT_Buff_Init(void)
 void IoT_parameter_init(void)
 {	
 	memset(ClientID,0,128);                              //客户端ID的缓冲区全部清零
-	sprintf(ClientID,"%s",DEVICEID);                     //阿里云：ClientID通常使用DeviceName（可在main里给完整ClientID）
+	sprintf(ClientID,"%s",DEVICEID);                     //OneNet：ClientID 使用 DeviceID
 	ClientID_len = strlen(ClientID);                     //计算客户端ID的长度
 	
 	memset(Username,0,128);                              //用户名的缓冲区全部清零
-	sprintf(Username,"%s&%s",DEVICEID,PRODUCTID);        //阿里云：DeviceName&ProductKey
+	sprintf(Username,"%s",PRODUCTID);                   //OneNet：Username 使用 ProductID
 	Username_len = strlen(Username);                     //计算用户名的长度
 	
 	memset(Passward,0,128);                              //用户名的缓冲区全部清零
@@ -356,6 +356,33 @@ void MQTT_PublishQs0(const char *topic, char *data, int data_len)
 	memcpy(&temp_buff[Fixed_len + 2 + topic_len], data, data_len);    //有效负荷：拷贝data数据
 	
 	TxDataBuf_Deal(temp_buff, Fixed_len + Variable_len + Payload_len);//加入发送数据缓冲区	
+}
+
+/*----------------------------------------------------------*/
+/*函数名：MQTT_PublishOneNetDpJson                          */
+/*功  能：将JSON封装为OneNet $dp格式后发布                  */
+/*说  明：OneNet $dp消息体 = 0x03 + 2字节长度 + JSON正文      */
+/*参  数：json_payload：JSON正文（不含$dp头）                */
+/*参  数：json_len：JSON正文长度                             */
+/*返回值：0成功，1失败                                      */
+/*----------------------------------------------------------*/
+uint8_t MQTT_PublishOneNetDpJson(const char *json_payload, int json_len)
+{
+	unsigned char dp_frame[TBUFF_UNIT];
+
+	if((json_payload == 0) || (json_len <= 0))
+		return 1;
+
+	if(json_len > (TBUFF_UNIT - 3))
+		return 1;
+
+	dp_frame[0] = 0x03;
+	dp_frame[1] = (unsigned char)((json_len >> 8) & 0xFF);
+	dp_frame[2] = (unsigned char)(json_len & 0xFF);
+	memcpy(&dp_frame[3], json_payload, json_len);
+
+	MQTT_PublishQs0(DATA_TOPIC_NAME, (char *)dp_frame, json_len + 3);
+	return 0;
 }
 
 /*----------------------------------------------------------*/
@@ -531,13 +558,13 @@ uint8_t MQTT_SaveThresholdToAT24C02(void)
 }
 
 /*----------------------------------------------------------*/
-/*函数名：MQTT_ParseAliyunThresholdJson                     */
-/*功  能：解析阿里云下发JSON并更新本地阈值                   */
+/*函数名：MQTT_ParseOneNetThresholdJson                     */
+/*功  能：解析OneNet下发JSON并更新本地阈值                   */
 /*说  明：支持多个字段名别名，更新成功后自动写入AT24C02       */
 /*参  数：json_payload：云端下发的JSON字符串                 */
 /*返回值：1有更新，0无更新                                   */
 /*----------------------------------------------------------*/
-uint8_t MQTT_ParseAliyunThresholdJson(const char *json_payload)
+uint8_t MQTT_ParseOneNetThresholdJson(const char *json_payload)
 {
 	int v;
 	uint8_t updated;
@@ -577,20 +604,20 @@ uint8_t MQTT_ParseAliyunThresholdJson(const char *json_payload)
 }
 
 /*----------------------------------------------------------*/
-/*函数名：MQTT_ProcessAliyunThresholdCommand                */
+/*函数名：MQTT_ProcessOneNetThresholdCommand                */
 /*功  能：处理命令缓冲区头部的一条阈值命令                   */
 /*说  明：处理后无论成功与否都会将命令出队，避免阻塞后续命令   */
 /*参  数：无                                                */
 /*返回值：1有更新，0无更新                                   */
 /*----------------------------------------------------------*/
-uint8_t MQTT_ProcessAliyunThresholdCommand(void)
+uint8_t MQTT_ProcessOneNetThresholdCommand(void)
 {
 	uint8_t updated;
 
 	if(MQTT_CMDOutPtr == MQTT_CMDInPtr)
 		return 0;
 
-	updated = MQTT_ParseAliyunThresholdJson((const char *)&MQTT_CMDOutPtr[2]);
+	updated = MQTT_ParseOneNetThresholdJson((const char *)&MQTT_CMDOutPtr[2]);
 
 	MQTT_CMDOutPtr += CBUFF_UNIT;
 	if(MQTT_CMDOutPtr == MQTT_CMDEndPtr)
