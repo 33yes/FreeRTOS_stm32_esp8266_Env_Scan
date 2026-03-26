@@ -28,3 +28,6 @@
 .\objects\oled.o: .\Library\stm32f10x_usart.h
 .\objects\oled.o: .\Library\stm32f10x_wwdg.h
 .\objects\oled.o: .\Library\misc.h
+.\objects\oled.o: .\Device\inc\OLED_Font.h
+.\objects\oled.o: .\Device\inc\OLED.h
+.\objects\oled.o: .\System\inc\Delay.h

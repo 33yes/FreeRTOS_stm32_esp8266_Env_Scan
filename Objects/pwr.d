@@ -1,5 +1,5 @@
 .\objects\pwr.o: System\src\pwr.c
-.\objects\pwr.o: .\System\inc\PWR.h
+.\objects\pwr.o: .\System\inc\pwr.h
 .\objects\pwr.o: .\Start\stm32f10x.h
 .\objects\pwr.o: .\Start\core_cm3.h
 .\objects\pwr.o: D:\keil5\ARM\ARMCC\Bin\..\include\stdint.h

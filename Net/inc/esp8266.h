@@ -4,7 +4,7 @@
 
 #include "usart2.h"	   	
 
-#define RESET_IO(x)    GPIO_WriteBit(GPIOA, GPIO_Pin_4, (BitAction)x)  //PA4控制WiFi的复位
+#define RESET_IO(x)    GPIO_WriteBit(GPIOA, GPIO_Pin_1, (BitAction)x)  //PA1控制WiFi的复位
 
 #define WiFi_printf       u2_printf           //串口2控制 WiFi
 #define WiFi_RxCounter    Usart2_RxCounter    //串口2控制 WiFi

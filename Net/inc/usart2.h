@@ -5,8 +5,8 @@
 #include "stdarg.h"		 
 #include "string.h"    
 
-#define USART2_TXBUFF_SIZE   1024   		   //定义串口2 发送缓冲区大小 1024字节
-#define USART2_RXBUFF_SIZE   1024              //定义串口2 接收缓冲区大小 1024字节
+#define USART2_TXBUFF_SIZE   512   		   //定义串口2 发送缓冲区大小（RAM优化）
+#define USART2_RXBUFF_SIZE   512               //定义串口2 接收缓冲区大小（RAM优化）
 
 // USART2: WiFi串口，与ESP8266通信
 #define WIFI_USART            USART2

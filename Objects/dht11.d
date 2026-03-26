@@ -28,3 +28,5 @@
 .\objects\dht11.o: .\Library\stm32f10x_usart.h
 .\objects\dht11.o: .\Library\stm32f10x_wwdg.h
 .\objects\dht11.o: .\Library\misc.h
+.\objects\dht11.o: .\Device\inc\DHT11.h
+.\objects\dht11.o: .\System\inc\Delay.h

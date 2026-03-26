@@ -237,10 +237,10 @@ void IoT_parameter_init(void)
 	sprintf(ServerIP,"%s",SERVER_IP);              		//构建服务器域名
 	ServerPort = SERVER_PORT;                           //服务器端口号
 	
-	printf("服 务 器：%s:%d\r\n",ServerIP,ServerPort);  
-	printf("客户端ID：%s\r\n",ClientID);                
-	printf("用 户 名：%s\r\n",Username);                 
-	printf("密    码：%s\r\n",Passward);                 
+	printf("SERVER: %s:%d\r\n", ServerIP, ServerPort);
+	printf("CLIENT_ID: %s\r\n", ClientID);
+	printf("USERNAME: %s\r\n", Username);
+	printf("PASSWORD: %s\r\n", Passward);
 }
 
 /*----------------------------------------------------------*/
@@ -413,7 +413,7 @@ void MQTT_DealPushdata_Qs0(unsigned char *redata)
 		totle_len += (temp_len + local + 1);              //累计统计的总的推送的数据长度
 		re_len -= (temp_len + local + 1);                 //接收的数据总长度 减去 本次统计的推送的总长度
 	}while(re_len!=0);                                    //如果接收的数据总长度等于0了，说明统计完毕了
-	printf("本次接收了%d个推送数据\r\n", pack_num);		
+	printf("RX publish packets: %d\r\n", pack_num);
 	temp_len = totle_len = 0;                		      //各个变量清零
 	for(i = 0; i < pack_num; i++)						  //已经统计到了接收的推送个数，开始for循环，取出每个推送的数据 
 	{                                		

@@ -16,9 +16,11 @@ static void System_BootInit(void)
 int main(void)
 {
 	System_BootInit();
+	LOG_WriteString("\r\n[BOOT] LOG UART1 ready\r\n");
 	printf("\r\n[BOOT] FreeRTOS env monitor start\r\n");
 
 	TaskManager_StartScheduler();
+	LOG_WriteString("[BOOT] Scheduler start failed\r\n");
 	printf("[BOOT] Scheduler exited unexpectedly\r\n");
 	IWDG_Init(IWDG_Prescaler_64, 625);
 
@@ -28,3 +30,4 @@ int main(void)
 		delay_ms(200);
 	}
 }
+

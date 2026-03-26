@@ -28,3 +28,5 @@
 .\objects\bh1750.o: .\Library\stm32f10x_usart.h
 .\objects\bh1750.o: .\Library\stm32f10x_wwdg.h
 .\objects\bh1750.o: .\Library\misc.h
+.\objects\bh1750.o: .\Device\inc\BH1750.h
+.\objects\bh1750.o: .\System\inc\Delay.h

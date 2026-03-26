@@ -28,4 +28,4 @@
 .\objects\iwdg.o: .\Library\stm32f10x_usart.h
 .\objects\iwdg.o: .\Library\stm32f10x_wwdg.h
 .\objects\iwdg.o: .\Library\misc.h
-.\objects\iwdg.o: .\System\inc\IWDG.h
+.\objects\iwdg.o: .\System\inc\iwdg.h

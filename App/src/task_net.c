@@ -38,8 +38,8 @@
 #define NET_MQTT_MAX_TX_PUMP_PER_ROUND  4
 #define NET_MQTT_MAX_RX_PUMP_PER_ROUND  4
 
-TASK_NET_WEAK const char SSID[] = "YOUR_WIFI_SSID";  //热点名称
-TASK_NET_WEAK const char PASS[] = "YOUR_WIFI_PASS";  //热点密码
+TASK_NET_WEAK const char SSID[] = "sayes";  //热点名称
+TASK_NET_WEAK const char PASS[] = "12345678";  //热点密码
 TASK_NET_WEAK const char PRODUCTID[] = "80id181j0o";  //OneNet产品ID
 TASK_NET_WEAK const char DEVICEID[] = "Env_001";  //OneNet设备ID
 TASK_NET_WEAK const char AUTHENTICATION[] = "RjVDMzJSZVZ1emZZeWVLbEh5U3JlUHI2V1hFUEt5anU=";  //API key

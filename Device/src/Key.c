@@ -73,7 +73,7 @@ static uint8_t Key_ScanOne(GPIO_TypeDef *gpio, uint16_t pin, uint8_t key_code, K
 void Key_Init(void)
 {
 	/*开启时钟*/
-	RCC_APB2PeriphClockCmd(KEY_GPIO, ENABLE);		//开启GPIOB的时钟
+    RCC_APB2PeriphClockCmd(KEY_GPIO_CLK, ENABLE);		//开启GPIOB的时钟
 	
 	/*GPIO初始化*/
 	GPIO_InitTypeDef GPIO_InitStructure;

@@ -29,3 +29,8 @@
 .\objects\stm32f10x_it.o: .\Library\stm32f10x_usart.h
 .\objects\stm32f10x_it.o: .\Library\stm32f10x_wwdg.h
 .\objects\stm32f10x_it.o: .\Library\misc.h
+.\objects\stm32f10x_it.o: .\Net\inc\usart2.h
+.\objects\stm32f10x_it.o: D:\keil5\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\stm32f10x_it.o: D:\keil5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\stm32f10x_it.o: D:\keil5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\stm32f10x_it.o: .\Net\inc\mqtt.h

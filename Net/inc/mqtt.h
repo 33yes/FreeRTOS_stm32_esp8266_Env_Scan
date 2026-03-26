@@ -4,14 +4,14 @@
 
 #include "stdint.h"
 
-#define  R_NUM               5     //接收缓冲区个数
-#define  RBUFF_UNIT          300   //接收缓冲区长度
+#define  R_NUM               4     //接收缓冲区个数（RAM优化）
+#define  RBUFF_UNIT          256   //接收缓冲区长度（RAM优化）
 
-#define  T_NUM               5     //发送缓冲区个数  
-#define  TBUFF_UNIT          300   //发送缓冲区长度
+#define  T_NUM               4     //发送缓冲区个数（RAM优化）  
+#define  TBUFF_UNIT          256   //发送缓冲区长度（RAM优化）
 
-#define  C_NUM               5     //命令缓冲区个数
-#define  CBUFF_UNIT          300   //命令缓冲区长度
+#define  C_NUM               4     //命令缓冲区个数（RAM优化）
+#define  CBUFF_UNIT          256   //命令缓冲区长度（RAM优化）
 
 #define  MQTT_TxData(x)       u2_TxData(x)  //串口2负责数据发送
 

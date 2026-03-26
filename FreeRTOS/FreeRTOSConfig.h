@@ -46,7 +46,8 @@
 #define configTICK_RATE_HZ			( ( TickType_t )1000 )
 #define configMAX_PRIORITIES		( 7 )
 #define configMINIMAL_STACK_SIZE	( ( unsigned short ) 128 )
-#define configTOTAL_HEAP_SIZE		( ( size_t ) ( 17 * 1024 ) )
+/* F103C8 RAM仅20KB：在可链接前提下，给任务创建保留适度余量 */
+#define configTOTAL_HEAP_SIZE		( ( size_t ) ( 12 * 1024 ) )
 #define configMAX_TASK_NAME_LEN		( 16 )
 #define configUSE_TRACE_FACILITY	0
 #define configUSE_16_BIT_TICKS		0

@@ -13,11 +13,11 @@
 #define TASK_PRI_OLED_UI              3
 #define TASK_PRI_STATUS               2
 
-#define TASK_STACK_NET_MQTT           768
-#define TASK_STACK_SENSOR             512
-#define TASK_STACK_REACTION           512
-#define TASK_STACK_OLED_UI            768
-#define TASK_STACK_STATUS             256
+#define TASK_STACK_NET_MQTT           512
+#define TASK_STACK_SENSOR             320
+#define TASK_STACK_REACTION           320
+#define TASK_STACK_OLED_UI            512
+#define TASK_STACK_STATUS             192
 
 TaskHandle_t g_task_net_mqtt_handle = NULL;
 TaskHandle_t g_task_sensor_handle = NULL;

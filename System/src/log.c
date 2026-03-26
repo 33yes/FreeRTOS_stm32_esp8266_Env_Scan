@@ -1,5 +1,26 @@
 #include "log.h"
 
+#if defined(__CC_ARM)
+#pragma import(__use_no_semihosting_swi)
+struct __FILE { int handle; };
+FILE __stdout;
+FILE __stdin;
+
+int ferror(FILE *f)
+{
+	(void)f;
+	return EOF;
+}
+
+void _sys_exit(int x)
+{
+	(void)x;
+	while (1)
+	{
+	}
+}
+#endif
+
 /**
  * @brief  初始化日志串口(USART1)
  * @param  baudrate: 波特率，例如 115200

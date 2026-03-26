@@ -5,6 +5,7 @@
 
 // 按键输入: 菜单导航/功能控制
 #define KEY_GPIO              GPIOB
+#define KEY_GPIO_CLK          RCC_APB2Periph_GPIOB
 #define KEY1_PIN              GPIO_Pin_13  /* PB13: 菜单光标上移 */
 #define KEY2_PIN              GPIO_Pin_14  /* PB14: 菜单确认 */
 #define KEY3_PIN              GPIO_Pin_15  /* PB15: 菜单光标下移 */

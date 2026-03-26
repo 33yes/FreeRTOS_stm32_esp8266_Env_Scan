@@ -28,3 +28,5 @@
 .\objects\at24c02.o: .\Library\stm32f10x_usart.h
 .\objects\at24c02.o: .\Library\stm32f10x_wwdg.h
 .\objects\at24c02.o: .\Library\misc.h
+.\objects\at24c02.o: .\Device\inc\AT24C02.h
+.\objects\at24c02.o: .\System\inc\Delay.h

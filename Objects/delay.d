@@ -1,4 +1,5 @@
 .\objects\delay.o: System\src\Delay.c
+.\objects\delay.o: .\System\inc\Delay.h
 .\objects\delay.o: .\Start\stm32f10x.h
 .\objects\delay.o: .\Start\core_cm3.h
 .\objects\delay.o: D:\keil5\ARM\ARMCC\Bin\..\include\stdint.h
@@ -28,3 +29,13 @@
 .\objects\delay.o: .\Library\stm32f10x_usart.h
 .\objects\delay.o: .\Library\stm32f10x_wwdg.h
 .\objects\delay.o: .\Library\misc.h
+.\objects\delay.o: .\FreeRTOS\inc\FreeRTOS.h
+.\objects\delay.o: D:\keil5\ARM\ARMCC\Bin\..\include\stddef.h
+.\objects\delay.o: .\FreeRTOS\FreeRTOSConfig.h
+.\objects\delay.o: .\FreeRTOS\inc\projdefs.h
+.\objects\delay.o: .\FreeRTOS\inc\portable.h
+.\objects\delay.o: .\FreeRTOS\inc\deprecated_definitions.h
+.\objects\delay.o: .\FreeRTOS\port\portmacro.h
+.\objects\delay.o: .\FreeRTOS\inc\mpu_wrappers.h
+.\objects\delay.o: .\FreeRTOS\inc\task.h
+.\objects\delay.o: .\FreeRTOS\inc\list.h
