@@ -6,8 +6,10 @@
 #include "task_net.h"
 #include "task_reaction.h"
 #include "stdio.h"
+#include "string.h"
 
 #define OLED_UI_PERIOD_MS    150
+#define OLED_LINE_CHARS      16
 
 typedef enum
 {
@@ -20,9 +22,50 @@ typedef enum
 
 static UiPage_t s_ui_page = UI_PAGE_HOME;
 static uint8_t s_menu_cursor = 0;
+static uint8_t s_menu_scroll_top = 0;
 static uint8_t s_motor_cursor = 0;
 static uint8_t s_light_cursor = 0;
 static uint8_t s_humi_cursor = 0;
+
+/* 每行显示缓存：用于“仅更新变化行”，减少闪屏 */
+static char s_oled_line_cache[4][OLED_LINE_CHARS + 1];
+
+/* 将文本裁剪/补空格到16字符，并仅在内容变化时刷新该行 */
+static void Ui_ShowLineCached(uint8_t line, const char *text)
+{
+	char out[OLED_LINE_CHARS + 1];
+	uint8_t i;
+
+	for (i = 0; i < OLED_LINE_CHARS; i++)
+	{
+		out[i] = ' ';
+	}
+	out[OLED_LINE_CHARS] = '\0';
+
+	if (text != NULL)
+	{
+		for (i = 0; (i < OLED_LINE_CHARS) && (text[i] != '\0'); i++)
+		{
+			out[i] = text[i];
+		}
+	}
+
+	if (strncmp(s_oled_line_cache[line - 1U], out, OLED_LINE_CHARS) != 0)
+	{
+		strncpy(s_oled_line_cache[line - 1U], out, OLED_LINE_CHARS + 1U);
+		OLED_ShowString(line, 1, out);
+	}
+}
+
+/* 标记整页脏区：用于翻页后强制刷新4行 */
+static void Ui_InvalidateAllLines(void)
+{
+	uint8_t i;
+	for (i = 0; i < 4U; i++)
+	{
+		s_oled_line_cache[i][0] = '\0';
+	}
+}
 
 /* 将灯状态转换为短文本（用于OLED显示） */
 static const char *Ui_LightStatusText(const ReactionStatus_t *status)
@@ -85,40 +128,56 @@ static void Ui_RenderHome(void)
 {
 	char line[24];
 	SensorData_t sensor;
-	ReactionStatus_t react;
 	const NetMqttRuntime_t *net;
 
 	(void)TaskSensor_GetLatest(&sensor);
-	(void)TaskReaction_GetStatus(&react);
 	net = TaskNetMqtt_GetRuntime();
 
-	OLED_Clear();
-	snprintf(line, sizeof(line), "T:%d H:%d L:%u", (int)sensor.temperature, (int)sensor.humidity, (unsigned int)sensor.light);
-	OLED_ShowString(1, 1, line);
+	snprintf(line, sizeof(line), "esp8266:%s", (net->wifi_connected != 0U) ? "ON" : "OFF");
+	Ui_ShowLineCached(1, line);
 
-	snprintf(line, sizeof(line), "NET:%s PIR:%u", (net->mqtt_connected != 0U) ? "ON" : "OFF", (unsigned int)sensor.motion);
-	OLED_ShowString(2, 1, line);
+	snprintf(line, sizeof(line), "temp:%d", (int)sensor.temperature);
+	Ui_ShowLineCached(2, line);
 
-	snprintf(line, sizeof(line), "L:%s M:%s H:%s", Ui_LightStatusText(&react), Ui_MotorStatusText(&react), Ui_HumidifierStatusText(&react));
-	OLED_ShowString(3, 1, line);
+	snprintf(line, sizeof(line), "humi:%d", (int)sensor.humidity);
+	Ui_ShowLineCached(3, line);
 
-	OLED_ShowString(4, 1, "K2->MENU");
+	snprintf(line, sizeof(line), "light:%u", (unsigned int)sensor.light);
+	Ui_ShowLineCached(4, line);
 }
 
-/* 二级菜单：电机/灯/加湿器/返回（两行两列） */
+/* 二级菜单：无按键提示；当条目超过可显示行时自动滚动 */
 static void Ui_RenderMenu(void)
 {
 	char line[24];
+	uint8_t i;
+	static const char *menu_items[] = {"MOTOR", "LIGHT", "HUMID", "BACK"};
 
-	OLED_Clear();
-	snprintf(line, sizeof(line), "%cMOTOR %cLIGHT", (s_menu_cursor == 0U) ? '>' : ' ', (s_menu_cursor == 1U) ? '>' : ' ');
-	OLED_ShowString(1, 1, line);
+	/* 第1行显示标题，第2~4行显示选项，因此可见窗口大小=3 */
+	if (s_menu_cursor < s_menu_scroll_top)
+	{
+		s_menu_scroll_top = s_menu_cursor;
+	}
+	else if (s_menu_cursor >= (uint8_t)(s_menu_scroll_top + 3U))
+	{
+		s_menu_scroll_top = (uint8_t)(s_menu_cursor - 2U);
+	}
 
-	snprintf(line, sizeof(line), "%cHUMID %cBACK", (s_menu_cursor == 2U) ? '>' : ' ', (s_menu_cursor == 3U) ? '>' : ' ');
-	OLED_ShowString(2, 1, line);
+	Ui_ShowLineCached(1, "menu");
 
-	OLED_ShowString(3, 1, "K1:UP K3:DOWN");
-	OLED_ShowString(4, 1, "K2:OK");
+	for (i = 0; i < 3U; i++)
+	{
+		uint8_t idx = (uint8_t)(s_menu_scroll_top + i);
+		if (idx < 4U)
+		{
+			snprintf(line, sizeof(line), "%c%s", (idx == s_menu_cursor) ? '>' : ' ', menu_items[idx]);
+			Ui_ShowLineCached((uint8_t)(i + 2U), line);
+		}
+		else
+		{
+			Ui_ShowLineCached((uint8_t)(i + 2U), "");
+		}
+	}
 }
 
 /* 电机控制页面渲染 */
@@ -128,15 +187,14 @@ static void Ui_RenderMotorPage(void)
 	ReactionStatus_t react;
 	(void)TaskReaction_GetStatus(&react);
 
-	OLED_Clear();
 	snprintf(line, sizeof(line), "motor:%s", Ui_MotorStatusText(&react));
-	OLED_ShowString(1, 1, line);
+	Ui_ShowLineCached(1, line);
 	snprintf(line, sizeof(line), "%cOFF %cL1", (s_motor_cursor == 0U) ? '>' : ' ', (s_motor_cursor == 1U) ? '>' : ' ');
-	OLED_ShowString(2, 1, line);
+	Ui_ShowLineCached(2, line);
 	snprintf(line, sizeof(line), "%cL2  %cAUTO", (s_motor_cursor == 2U) ? '>' : ' ', (s_motor_cursor == 3U) ? '>' : ' ');
-	OLED_ShowString(3, 1, line);
+	Ui_ShowLineCached(3, line);
 	snprintf(line, sizeof(line), "%cBACK", (s_motor_cursor == 4U) ? '>' : ' ');
-	OLED_ShowString(4, 1, line);
+	Ui_ShowLineCached(4, line);
 }
 
 /* 灯光控制页面渲染 */
@@ -146,15 +204,14 @@ static void Ui_RenderLightPage(void)
 	ReactionStatus_t react;
 	(void)TaskReaction_GetStatus(&react);
 
-	OLED_Clear();
 	snprintf(line, sizeof(line), "light:%s", Ui_LightStatusText(&react));
-	OLED_ShowString(1, 1, line);
+	Ui_ShowLineCached(1, line);
 	snprintf(line, sizeof(line), "%cOFF %cL1", (s_light_cursor == 0U) ? '>' : ' ', (s_light_cursor == 1U) ? '>' : ' ');
-	OLED_ShowString(2, 1, line);
+	Ui_ShowLineCached(2, line);
 	snprintf(line, sizeof(line), "%cL2  %cAUTO", (s_light_cursor == 2U) ? '>' : ' ', (s_light_cursor == 3U) ? '>' : ' ');
-	OLED_ShowString(3, 1, line);
+	Ui_ShowLineCached(3, line);
 	snprintf(line, sizeof(line), "%cBACK", (s_light_cursor == 4U) ? '>' : ' ');
-	OLED_ShowString(4, 1, line);
+	Ui_ShowLineCached(4, line);
 }
 
 /* 加湿器控制页面渲染 */
@@ -164,15 +221,14 @@ static void Ui_RenderHumidifierPage(void)
 	ReactionStatus_t react;
 	(void)TaskReaction_GetStatus(&react);
 
-	OLED_Clear();
 	snprintf(line, sizeof(line), "humid:%s", Ui_HumidifierStatusText(&react));
-	OLED_ShowString(1, 1, line);
+	Ui_ShowLineCached(1, line);
 	snprintf(line, sizeof(line), "%cON   %cOFF", (s_humi_cursor == 0U) ? '>' : ' ', (s_humi_cursor == 1U) ? '>' : ' ');
-	OLED_ShowString(2, 1, line);
+	Ui_ShowLineCached(2, line);
 	snprintf(line, sizeof(line), "%cAUTO", (s_humi_cursor == 2U) ? '>' : ' ');
-	OLED_ShowString(3, 1, line);
+	Ui_ShowLineCached(3, line);
 	snprintf(line, sizeof(line), "%cBACK", (s_humi_cursor == 3U) ? '>' : ' ');
-	OLED_ShowString(4, 1, line);
+	Ui_ShowLineCached(4, line);
 }
 
 /* 根据按键处理页面逻辑 */
@@ -189,6 +245,8 @@ static void Ui_HandleKey(uint8_t key)
 		{
 			s_ui_page = UI_PAGE_MENU;
 			s_menu_cursor = 0;
+			s_menu_scroll_top = 0;
+			Ui_InvalidateAllLines();
 		}
 		return;
 	}
@@ -223,6 +281,7 @@ static void Ui_HandleKey(uint8_t key)
 			else
 			{
 				s_ui_page = UI_PAGE_HOME;
+				Ui_InvalidateAllLines();
 			}
 		}
 		return;
@@ -259,6 +318,7 @@ static void Ui_HandleKey(uint8_t key)
 			else
 			{
 				s_ui_page = UI_PAGE_MENU;
+				Ui_InvalidateAllLines();
 			}
 		}
 		return;
@@ -295,6 +355,7 @@ static void Ui_HandleKey(uint8_t key)
 			else
 			{
 				s_ui_page = UI_PAGE_MENU;
+				Ui_InvalidateAllLines();
 			}
 		}
 		return;
@@ -327,6 +388,7 @@ static void Ui_HandleKey(uint8_t key)
 			else
 			{
 				s_ui_page = UI_PAGE_MENU;
+				Ui_InvalidateAllLines();
 			}
 		}
 	}
@@ -363,6 +425,7 @@ void TaskOledUi_Init(void)
 	OLED_Init();
 	Key_Init();
 	OLED_Clear();
+	Ui_InvalidateAllLines();
 	s_ui_page = UI_PAGE_HOME;
 }
 
